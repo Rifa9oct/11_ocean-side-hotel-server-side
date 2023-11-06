@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -29,12 +29,39 @@ async function run() {
     //await client.connect();
 
     const roomsCollection = client.db('hotelDB').collection('rooms');
+    const bookingsCollection = client.db('hotelDB').collection('bookings');
 
     app.get('/rooms', async (req, res) => {
       const cursor = roomsCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     })
+
+    app.get('/rooms/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await roomsCollection.findOne(query);
+      res.send(result);
+    })
+
+    app.post("/bookings", async (req, res) => {
+      const booking = req.body;
+      console.log(booking)
+      const result = await bookingsCollection.insertOne(booking);
+      res.send(result);
+    })
+
+    app.get("/bookings", async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = {email:req.query.email}
+
+      }
+      const result = await bookingsCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
 
 
 
@@ -52,10 +79,10 @@ run().catch(console.dir);
 
 
 
-app.get('/',(req, res)=>{
-    res.send("OCEAN SIDE HOTEL SERVER IS RUNNING....")
+app.get('/', (req, res) => {
+  res.send("OCEAN SIDE HOTEL SERVER IS RUNNING....")
 })
 
-app.listen(port, ()=>{
-    console.log(`ocean side hotel server is running, ${port}`)
+app.listen(port, () => {
+  console.log(`ocean side hotel server is running, ${port}`)
 })
