@@ -76,6 +76,12 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/reviews',async (req, res) => {
+      const cursor = reviewsCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
       console.log(booking)
