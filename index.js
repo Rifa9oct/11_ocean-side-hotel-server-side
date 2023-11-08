@@ -11,7 +11,9 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors({
   origin:[
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://ocean-side-hotel.web.app",
+    "https://ocean-side-hotel.firebaseapp.com"
   ],
   credentials:true
 }));
@@ -58,6 +60,7 @@ async function run() {
 
     const roomsCollection = client.db('hotelDB').collection('rooms');
     const bookingsCollection = client.db('hotelDB').collection('bookings');
+    const reviewsCollection = client.db('hotelDB').collection('reviews');
 
     app.get('/rooms',async (req, res) => {
       // console.log("cookies", req.cookies)
@@ -77,6 +80,13 @@ async function run() {
       const booking = req.body;
       console.log(booking)
       const result = await bookingsCollection.insertOne(booking);
+      res.send(result);
+    })
+
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      console.log(review)
+      const result = await reviewsCollection.insertOne(review);
       res.send(result);
     })
 
