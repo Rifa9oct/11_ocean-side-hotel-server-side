@@ -158,11 +158,6 @@ async function run() {
       res.clearCookie('token', {maxAge: 0}).send({success:true})
     })
 
-
-
-
-
-
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -172,8 +167,6 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
-
 
 app.get('/', (req, res) => {
   res.send("OCEAN SIDE HOTEL SERVER IS RUNNING....")
