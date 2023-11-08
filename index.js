@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser')
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -15,6 +16,27 @@ app.use(cors({
   credentials:true
 }));
 app.use(express.json());
+app.use(cookieParser());
+
+const logger = (req,res,next)=>{
+  console.log("log info: ",req.method, req.url);
+  next();
+}
+
+const verifyToken = (req, res , next) =>{
+  const token = req?.cookies?.token;
+  console.log("token in the middleware: ", token);
+  if(!token){
+    return res.status(401).send({message: "unauthorized access"});
+  }
+  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err, decoded)=>{
+    if(err){
+      return res.status(401).send({message: "unauthorized access"});
+    }
+    req.user = decoded;
+    next();
+  })
+}
 
 
 //mongo db
@@ -37,7 +59,8 @@ async function run() {
     const roomsCollection = client.db('hotelDB').collection('rooms');
     const bookingsCollection = client.db('hotelDB').collection('bookings');
 
-    app.get('/rooms', async (req, res) => {
+    app.get('/rooms',async (req, res) => {
+      // console.log("cookies", req.cookies)
       const cursor = roomsCollection.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -57,7 +80,11 @@ async function run() {
       res.send(result);
     })
 
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", logger ,verifyToken, async (req, res) => {
+      console.log("token owner info",req.user);
+      if(req.user.email !== req.query.email){
+        return res.status(403).send({message: "forbidden access"});
+      }
       let query = {};
       if (req.query?.email) {
         query = { email: req.query.email }
